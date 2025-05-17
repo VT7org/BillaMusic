@@ -182,7 +182,7 @@ async def details(self, link: str, videoid: bool | str = None):
         else:
             return 0, stderr.decode()
 
-@alru_cache(maxsize=None)
+    @alru_cache(maxsize=None)
     async def playlist(self, link, limit, videoid: bool | str = None):
         if videoid:
             link = self.listbase + link
@@ -248,7 +248,7 @@ async def details(self, link: str, videoid: bool | str = None):
                 "thumb": details["thumbnails"][0]["url"],
             }, details["id"]
 
-@alru_cache(maxsize=None)
+    @alru_cache(maxsize=None)
     @asyncify
     def formats(self, link: str, videoid: bool | str = None):
         if videoid:
@@ -297,7 +297,7 @@ async def details(self, link: str, videoid: bool | str = None):
             data["duration"],
             data["thumbnails"][0]["url"].split("?")[0],
             data["id"],
-        )
+    )
 
 async def download(
         self,
