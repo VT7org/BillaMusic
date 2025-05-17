@@ -137,7 +137,7 @@ class YouTube:
         self.regex = r"(?:youtube\.com|youtu\.be)"
         self.status = "https://www.youtube.com/oembed?url="
         self.listbase = "https://youtube.com/playlist?list="
-        self.reg = re.compile(r"\x1B(?:[@-Z\\-_]|
+        self.reg = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
     async def exists(self, link: str, videoid: bool | str = None):
         if videoid:
@@ -146,6 +146,15 @@ class YouTube:
             return True
         else:
             return False
+
+    @property
+    def use_fallback(self):
+        return NOTHING["cookies_dead"] is True
+
+    @use_fallback.setter
+    def use_fallback(self, value):
+        if NOTHING["cookies_dead"] is None:
+            NOTHING["cookies_dead"] = value
 
     @property
     def use_fallback(self):
