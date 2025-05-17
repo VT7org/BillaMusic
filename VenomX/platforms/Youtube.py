@@ -122,7 +122,7 @@ class YouTube:
         return text[offset : offset + length]
 
 @alru_cache(maxsize=None)
-    async def details(self, link: str, videoid: bool | str = None):
+async def details(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
         link = link.split("&")[0] if "&" in link else link
