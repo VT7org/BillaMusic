@@ -1,5 +1,3 @@
-# All rights reserved.
-#
 import asyncio
 import os
 import random
@@ -133,8 +131,8 @@ async def details(self, link: str, videoid: bool | str = None):
             thumbnail = result["thumbnails"][0]["url"].split("?")[0]
             vidid = result["id"]
             duration_sec = int(time_to_seconds(duration_min)) if duration_min else 0
-        return title, duration_min, duration_sec, thumbnail, vidid
-
+        return title, duration_min, duration_sec, thumbnail , vidid
+    
     @alru_cache(maxsize=None)
     async def title(self, link: str, videoid: bool | str = None):
         if videoid:
