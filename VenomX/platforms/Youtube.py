@@ -1,8 +1,10 @@
+
+# All rights reserved.
+#
 import asyncio
 import os
 import random
 import re
-import requests
 
 from async_lru import alru_cache
 from py_yt import VideosSearch
@@ -17,46 +19,19 @@ from VenomX.utils.formatters import seconds_to_min, time_to_seconds
 
 NOTHING = {"cookies_dead": None}
 
-def extract_video_id(link: str) -> str:
-    patterns = [
-        r'youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=)([0-9A-Za-z_-]{11})',
-        r'youtu\.be\/([0-9A-Za-z_-]{11})',
-        r'youtube\.com\/(?:playlist\?list=[^&]+&v=|v\/)([0-9A-Za-z_-]{11})',
-        r'youtube\.com\/(?:.*\?v=|.*/)([0-9A-Za-z_-]{11})'
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, link)
-        if match:
-            return match.group(1)
-    raise ValueError("Invalid YouTube link provided.")
-
-def api_dl(video_id: str) -> str:
-    api_url = f"https://spotify.ashlynn.workers.dev/arytmp3?direct&id={video_id}"
-    file_path = os.path.join("downloads", f"{video_id}.mp3")
-    if os.path.exists(file_path):
-        return file_path
-    try:
-        with requests.get(api_url, stream=True) as response:
-            if response.status_code == 200:
-                os.makedirs("downloads", exist_ok=True)
-                with open(file_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                return file_path
-            else:
-                return None
-    except requests.RequestException:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        return None
-
 
 def cookies():
     folder_path = f"{os.getcwd()}/cookies"
     txt_files = [file for file in os.listdir(folder_path) if file.endswith(".txt")]
     if not txt_files:
-        raise FileNotFoundError("No Cookies found in cookies directory.")
-    return os.path.join(folder_path, random.choice(txt_files))
+        raise FileNotFoundError(
+            "No Cookies found in cookies directory make sure your cookies file written  .txt file"
+        )
+    cookie_txt_file = random.choice(txt_files)
+    cookie_txt_file = os.path.join(folder_path, cookie_txt_file)
+    return cookie_txt_file
+    # return f"""cookies/{str(cookie(_txt_file).split("/")[-1]}"""
+
 
 async def shell_cmd(cmd):
     proc = await asyncio.create_subprocess_shell(
@@ -65,9 +40,13 @@ async def shell_cmd(cmd):
         stderr=asyncio.subprocess.PIPE,
     )
     out, errorz = await proc.communicate()
-    if errorz and "unavailable videos are hidden" not in errorz.decode().lower():
-        return errorz.decode("utf-8")
+    if errorz:
+        if "unavailable videos are hidden" in (errorz.decode("utf-8")).lower():
+            return out.decode("utf-8")
+        else:
+            return errorz.decode("utf-8")
     return out.decode("utf-8")
+
 
 class YouTube:
     def __init__(self):
@@ -119,20 +98,24 @@ class YouTube:
             return None
         return text[offset : offset + length]
 
-@alru_cache(maxsize=None)
-async def details(self, link: str, videoid: bool | str = None):
+    @alru_cache(maxsize=None)
+    async def details(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
         results = VideosSearch(link, limit=1)
         for result in (await results.next())["result"]:
             title = result["title"]
             duration_min = result["duration"]
             thumbnail = result["thumbnails"][0]["url"].split("?")[0]
             vidid = result["id"]
-            duration_sec = int(time_to_seconds(duration_min)) if duration_min else 0
-        return title, duration_min, duration_sec, thumbnail , vidid
-    
+            if str(duration_min) == "None":
+                duration_sec = 0
+            else:
+                duration_sec = int(time_to_seconds(duration_min))
+        return title, duration_min, duration_sec, thumbnail, vidid
+
     @alru_cache(maxsize=None)
     async def title(self, link: str, videoid: bool | str = None):
         if videoid:
@@ -169,16 +152,21 @@ async def details(self, link: str, videoid: bool | str = None):
     async def video(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
         cmd = [
             "yt-dlp",
-            "--cookies", cookies(),
+            f"--cookies",
+            cookies(),
             "-g",
-            "-f", "best[height<=?720][width<=?1280]",
-            link,
+            "-f",
+            "best[height<=?720][width<=?1280]",
+            f"{link}",
         ]
         proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
         stdout, stderr = await proc.communicate()
         if stdout:
@@ -321,7 +309,7 @@ async def details(self, link: str, videoid: bool | str = None):
         thumbnail = result[query_type]["thumbnails"][0]["url"].split("?")[0]
         return title, duration_min, thumbnail, vidid
 
-async def download(
+    async def download(
         self,
         link: str,
         mystic,
@@ -345,7 +333,7 @@ async def download(
                 "nocheckcertificate": True,
                 "quiet": True,
                 "no_warnings": True,
-                "cookiefile": cookies(),
+                "cookiefile": f"{cookies()}",
                 "prefer_ffmpeg": True,
             }
 
@@ -368,7 +356,7 @@ async def download(
                 "quiet": True,
                 "no_warnings": True,
                 "prefer_ffmpeg": True,
-                "cookiefile": cookies(),
+                "cookiefile": f"{cookies()}",
             }
 
             with YoutubeDL(ydl_optssx) as x:
@@ -393,12 +381,13 @@ async def download(
                 "no_warnings": True,
                 "prefer_ffmpeg": True,
                 "merge_output_format": "mp4",
-                "cookiefile": cookies(),
+                "cookiefile": f"{cookies()}",
             }
 
             with YoutubeDL(ydl_optssx) as x:
                 info = x.extract_info(link)
-                return x.prepare_filename(info)
+                file_path = x.prepare_filename(info)
+                return file_path
 
         @asyncify
         def song_audio_dl():
@@ -419,12 +408,13 @@ async def download(
                         "preferredquality": "192",
                     }
                 ],
-                "cookiefile": cookies(),
+                "cookiefile": f"{cookies()}",
             }
 
             with YoutubeDL(ydl_optssx) as x:
                 info = x.extract_info(link)
-                return x.prepare_filename(info)
+                file_path = x.prepare_filename(info)
+                return file_path
 
         if songvideo:
             return await song_video_dl()
@@ -439,17 +429,21 @@ async def download(
             else:
                 command = [
                     "yt-dlp",
-                    "--cookies", cookies(),
+                    f"--cookies",
+                    cookies(),
                     "-g",
-                    "-f", "best",
+                    "-f",
+                    "best",
                     link,
                 ]
+
                 proc = await asyncio.create_subprocess_exec(
                     *command,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                 )
                 stdout, stderr = await proc.communicate()
+
                 if stdout:
                     downloaded_file = stdout.decode().split("\n")[0]
                     direct = None
@@ -461,47 +455,3 @@ async def download(
             downloaded_file = await audio_dl()
 
         return downloaded_file, direct
-
-
-# Extra integration at bottom of file
-import requests
-
-def api_dl(video_id: str) -> str:
-    api_url = f"https://spotify.ashlynn.workers.dev/arytmp3?direct&id={video_id}"
-    file_path = os.path.join("downloads", f"{video_id}.mp3")
-
-    if os.path.exists(file_path):
-        print(f"{file_path} already exists. Skipping download.")
-        return file_path
-
-    try:
-        with requests.get(api_url, stream=True) as response:
-            if response.status_code == 200:
-                os.makedirs("downloads", exist_ok=True)
-                with open(file_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                print(f"Downloaded {file_path}")
-                return file_path
-            else:
-                print(f"Failed to download {video_id}. Status: {response.status_code}")
-                return None
-    except requests.RequestException as e:
-        print(f"Error downloading {video_id}: {e}")
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        return None
-
-
-def extract_video_id(link: str) -> str:
-    patterns = [
-        r'youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=)([0-9A-Za-z_-]{11})',
-        r'youtu\.be\/([0-9A-Za-z_-]{11})',
-        r'youtube\.com\/(?:playlist\?list=[^&]+&v=|v\/)([0-9A-Za-z_-]{11})',
-        r'youtube\.com\/(?:.*\?v=|.*\/)([0-9A-Za-z_-]{11})'
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, link)
-        if match:
-            return match.group(1)
-    raise ValueError("Invalid YouTube link provided.")
