@@ -1,3 +1,21 @@
-build:
-  docker:
-    worker: Dockerfile
+services:
+  - type: web
+    name: billamusic-bot
+    env: python
+    buildCommand: pip install -U -r requirements.txt
+    startCommand: python3 -m VenomX
+    envVars:
+      - key: API_ID
+        value: your_api_id
+      - key: API_HASH
+        value: your_api_hash
+      - key: BOT_TOKEN
+        value: your_bot_token
+      - key: MONGO_DB_URI
+        value: your_mongo_uri
+      - key: LOGGGER_ID
+        value: -100xxxx
+      - key: OWNER_ID
+        value: your_user_id
+      - key: STRING_SESSIONS 
+        value: your_string_session
