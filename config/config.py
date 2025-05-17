@@ -33,14 +33,14 @@ CLEANMODE_DELETE_MINS = int(
 # Custom max audio(music) duration for voice chat. set DURATION_LIMIT in variables with your own time(mins), Default to 60 mins.
 
 DURATION_LIMIT_MIN = int(
-    getenv("DURATION_LIMIT", "5400")
+    getenv("DURATION_LIMIT", "999999")
 )  # Remember to give value in Minutes
 
 
 
 # Duration Limit for downloading Songs in MP3 or MP4 format from bot
 SONG_DOWNLOAD_DURATION = int(
-    getenv("SONG_DOWNLOAD_DURATION_LIMIT", "5400")
+    getenv("SONG_DOWNLOAD_DURATION_LIMIT", "999999")
 )  # Remember to give value in Minutes
 
 
@@ -143,7 +143,7 @@ SPOTIFY_CLIENT_SECRET = getenv(
 
 
 # Maximum number of video calls allowed on bot. You can later set it via /set_video_limit on telegram
-VIDEO_STREAM_LIMIT = int(getenv("VIDEO_STREAM_LIMIT", "999"))
+VIDEO_STREAM_LIMIT = int(getenv("VIDEO_STREAM_LIMIT", "9999"))
 
 
 # Maximum Limit Allowed for users to save playlists on bot's server
@@ -196,17 +196,17 @@ autoclean = []
 
 START_IMG_URL = getenv(
     "START_IMG_URL",
-    "https://te.legra.ph/file/7d9c0fec898bbee09ba95.jpg",
+    "https://graph.org/file/41d19052664943f508b55-5013dfbc05a3dc2079.jpg",
 )
 
 PING_IMG_URL = getenv(
     "PING_IMG_URL",
-    "https://te.legra.ph/file/95fcd2ec79b527ae3fac4.jpg",
+    "https://graph.org/file/5b8ec611f351181654684-e74e570c78774ecf15.jpg",
 )
 
 PLAYLIST_IMG_URL = getenv(
     "PLAYLIST_IMG_URL",
-    "https://te.legra.ph/file/f739e6067725fa88ce8d3.jpg",
+    "https://graph.org/file/1bcbb26caa7155f52e000-ad152dbea5f1a0c7ef.jpg",
 )
 
 GLOBAL_IMG_URL = getenv(
@@ -216,22 +216,22 @@ GLOBAL_IMG_URL = getenv(
 
 STATS_IMG_URL = getenv(
     "STATS_IMG_URL",
-    "https://te.legra.ph/file/c66abbf490158487fdb72.jpg",
+    "https://graph.org/file/efbb051b7aad4b2ad7d37-c8e4ddd2960c91be07.jpg",
 )
 
 TELEGRAM_AUDIO_URL = getenv(
     "TELEGRAM_AUDIO_URL",
-    "https://te.legra.ph/file/3d130381bf5945c139023.jpg",
+    "https://graph.org/file/da48401d509a23b49f7a3-aaff4c6be26ea19fc8.jpg",
 )
 
 TELEGRAM_VIDEO_URL = getenv(
     "TELEGRAM_VIDEO_URL",
-    "https://te.legra.ph/file/d3663021fb51e14a84aa9.jpg",
+    "https://graph.org/file/da48401d509a23b49f7a3-aaff4c6be26ea19fc8.jpg",
 )
 
 STREAM_IMG_URL = getenv(
     "STREAM_IMG_URL",
-    "https://te.legra.ph/file/248e6858de3f2e37393c1.jpg",
+    "https://graph.org/file/94abb12471c456fb43459-2abe114d4f925a7010.jpg",
 )
 
 SOUNCLOUD_IMG_URL = getenv(
@@ -241,7 +241,7 @@ SOUNCLOUD_IMG_URL = getenv(
 
 YOUTUBE_IMG_URL = getenv(
     "YOUTUBE_IMG_URL",
-    "https://te.legra.ph/file/98622051acad1988886be.jpg",
+    "https://graph.org/file/0be8d843695876376efd6-aedad17042109171a2.jpg",
 )
 
 SPOTIFY_ARTIST_IMG_URL = getenv(
