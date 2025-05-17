@@ -139,28 +139,34 @@ async def details(self, link: str, videoid: bool | str = None):
     async def title(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
         results = VideosSearch(link, limit=1)
         for result in (await results.next())["result"]:
-            return result["title"]
+            title = result["title"]
+        return title
 
     @alru_cache(maxsize=None)
     async def duration(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
         results = VideosSearch(link, limit=1)
         for result in (await results.next())["result"]:
-            return result["duration"]
+            duration = result["duration"]
+        return duration
 
     @alru_cache(maxsize=None)
     async def thumbnail(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
         results = VideosSearch(link, limit=1)
         for result in (await results.next())["result"]:
-            return result["thumbnails"][0]["url"].split("?")[0]
+            thumbnail = result["thumbnails"][0]["url"].split("?")[0]
+        return thumbnail
 
     async def video(self, link: str, videoid: bool | str = None):
         if videoid:
@@ -186,14 +192,17 @@ async def details(self, link: str, videoid: bool | str = None):
     async def playlist(self, link, limit, videoid: bool | str = None):
         if videoid:
             link = self.listbase + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
 
         cmd = (
             f"yt-dlp -i --compat-options no-youtube-unavailable-videos "
             f'--get-id --flat-playlist --playlist-end {limit} --skip-download "{link}" '
             f"2>/dev/null"
         )
+
         playlist = await shell_cmd(cmd)
+
         try:
             result = [key for key in playlist.split("\n") if key]
         except Exception:
@@ -204,7 +213,8 @@ async def details(self, link: str, videoid: bool | str = None):
     async def track(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
         if link.startswith("http://") or link.startswith("https://"):
             return await self._track(link)
         try:
@@ -215,13 +225,14 @@ async def details(self, link: str, videoid: bool | str = None):
                 vidid = result["id"]
                 yturl = result["link"]
                 thumbnail = result["thumbnails"][0]["url"].split("?")[0]
-            return {
+            track_details = {
                 "title": title,
                 "link": yturl,
                 "vidid": vidid,
                 "duration_min": duration_min,
                 "thumb": thumbnail,
-            }, vidid
+            }
+            return track_details, vidid
         except Exception:
             return await self._track(link)
 
@@ -232,35 +243,39 @@ async def details(self, link: str, videoid: bool | str = None):
             "noplaylist": True,
             "quiet": True,
             "extract_flat": "in_playlist",
-            "cookiefile": cookies(),
+            "cookiefile": f"{cookies()}",
         }
         with YoutubeDL(options) as ydl:
-            info_dict = ydl.extract_info(f"ytsearch:{q}", download=False)
+            info_dict = ydl.extract_info(f"ytsearch: {q}", download=False)
             details = info_dict.get("entries")[0]
-            return {
+            info = {
                 "title": details["title"],
                 "link": details["url"],
                 "vidid": details["id"],
                 "duration_min": (
                     seconds_to_min(details["duration"])
-                    if details["duration"] != 0 else None
+                    if details["duration"] != 0
+                    else None
                 ),
                 "thumb": details["thumbnails"][0]["url"],
-            }, details["id"]
+            }
+            return info, details["id"]
 
     @alru_cache(maxsize=None)
     @asyncify
     def formats(self, link: str, videoid: bool | str = None):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
 
         ytdl_opts = {
             "quiet": True,
-            "cookiefile": cookies(),
+            "cookiefile": f"{cookies()}",
         }
 
-        with YoutubeDL(ytdl_opts) as ydl:
+        ydl = YoutubeDL(ytdl_opts)
+        with ydl:
             formats_available = []
             r = ydl.extract_info(link, download=False)
             for format in r["formats"]:
@@ -270,34 +285,43 @@ async def details(self, link: str, videoid: bool | str = None):
                     continue
                 if "dash" not in str(format["format"]).lower():
                     try:
-                        formats_available.append(
-                            {
-                                "format": format["format"],
-                                "filesize": format["filesize"],
-                                "format_id": format["format_id"],
-                                "ext": format["ext"],
-                                "format_note": format["format_note"],
-                                "yturl": link,
-                            }
-                        )
+                        format["format"]
+                        format["filesize"]
+                        format["format_id"]
+                        format["ext"]
+                        format["format_note"]
                     except KeyError:
                         continue
+                    formats_available.append(
+                        {
+                            "format": format["format"],
+                            "filesize": format["filesize"],
+                            "format_id": format["format_id"],
+                            "ext": format["ext"],
+                            "format_note": format["format_note"],
+                            "yturl": link,
+                        }
+                    )
         return formats_available, link
 
     @alru_cache(maxsize=None)
-    async def slider(self, link: str, query_type: int, videoid: bool | str = None):
+    async def slider(
+        self,
+        link: str,
+        query_type: int,
+        videoid: bool | str = None,
+    ):
         if videoid:
             link = self.base + link
-        link = link.split("&")[0] if "&" in link else link
+        if "&" in link:
+            link = link.split("&")[0]
         a = VideosSearch(link, limit=10)
         result = (await a.next()).get("result")
-        data = result[query_type]
-        return (
-            data["title"],
-            data["duration"],
-            data["thumbnails"][0]["url"].split("?")[0],
-            data["id"],
-    )
+        title = result[query_type]["title"]
+        duration_min = result[query_type]["duration"]
+        vidid = result[query_type]["id"]
+        thumbnail = result[query_type]["thumbnails"][0]["url"].split("?")[0]
+        return title, duration_min, thumbnail, vidid
 
 async def download(
         self,
