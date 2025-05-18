@@ -1,4 +1,3 @@
-# All rights reserved.
 import os
 import re
 import yt_dlp
@@ -17,8 +16,8 @@ from config import (
     SONG_DOWNLOAD_DURATION_LIMIT,
 )
 from strings import command
-from VenomX import Platform, app
-from VenomX.platforms.Youtube import cookies
+from VenomX import app
+from VenomX.platforms.YouTube import cookies
 from VenomX.utils.decorators.language import language, languageCB
 from VenomX.utils.formatters import convert_bytes
 from VenomX.utils.inline.song import song_markup
