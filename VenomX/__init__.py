@@ -1,7 +1,3 @@
-
-#
-# All rights reserved.
-
 from VenomX.core.bot import AyuBot
 from VenomX.core.dir import dirr
 from VenomX.core.git import git
@@ -31,7 +27,14 @@ app = AyuBot()
 # Assistant Client
 userbot = Userbot()
 
-from .platforms import PlaTForms
+from .platforms import *
 
-Platform = PlaTForms()
+Apple = AppleAPI()
+Carbon = CarbonAPI()
+JioSavan = SaavnAPI()
+SoundCloud = SoundAPI()
+Spotify = SpotifyAPI()
+Resso = RessoAPI()
+Telegram = TeleAPI()
+YouTube = YouTubeAPI()
 HELPABLE = {}
