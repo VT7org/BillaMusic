@@ -1,7 +1,3 @@
-
-# All rights reserved.
-#
-
 from os import path
 
 from yt_dlp import YoutubeDL
@@ -10,7 +6,7 @@ from VenomX.utils.decorators import asyncify
 from VenomX.utils.formatters import seconds_to_min
 
 
-class SoundCloud:
+class SoundAPI:
     def __init__(self):
         self.opts = {
             "outtmpl": "downloads/%(id)s.%(ext)s",
