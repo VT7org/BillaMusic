@@ -1,22 +1,17 @@
-
-# All rights reserved.
-#
-
-
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, Message
 
 import config
 from config import BANNED_USERS
 from strings import command
-from VenomX import Platform, app
+from VenomX import YouTube, JioSavan, app
 from VenomX.core.call import Ayush
 from VenomX.misc import db
 from VenomX.utils.database import get_loop
 from VenomX.utils.decorators import AdminRightsCheck
 from VenomX.utils.inline.play import stream_markup, telegram_markup
 from VenomX.utils.stream.autoclear import auto_clean
-from VenomX.utils.thumbnails import gen_thumb
+from VenomX.utils.thumbnails import get_thumb
 
 
 @app.on_message(command("SKIP_COMMAND") & filters.group & ~BANNED_USERS)
@@ -107,7 +102,7 @@ async def skip(cli, message: Message, _, chat_id):
     duration_min = check[0]["dur"]
     status = True if str(streamtype) == "video" else None
     if "live_" in queued:
-        n, link = await Platform.youtube.video(videoid, True)
+        n, link = await YouTube.video(videoid, True)
         if n == 0:
             return await message.reply_text(_["admin_11"].format(title))
         try:
@@ -142,7 +137,7 @@ async def skip(cli, message: Message, _, chat_id):
         except Exception:
             return await mystic.edit_text(_["call_7"])
         button = stream_markup(_, videoid, chat_id)
-        img = await gen_thumb(videoid)
+        img = await get_thumb(videoid)
         run = await message.reply_photo(
             photo=img,
             caption=_["stream_1"].format(
@@ -204,10 +199,10 @@ async def skip(cli, message: Message, _, chat_id):
             )
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "tg"
-        elif "saavn" in videoid:
+        elif "Saavn" in videoid:
             button = telegram_markup(_, chat_id)
             url = check[0]["url"]
-            details = await Platform.saavn.info(url)
+            details = await JioSavan.info(url)
             run = await message.reply_photo(
                 photo=details["thumb"] or config.TELEGRAM_AUDIO_URL,
                 caption=_["stream_1"].format(title, url, check[0]["dur"], user),
@@ -217,7 +212,7 @@ async def skip(cli, message: Message, _, chat_id):
             db[chat_id][0]["markup"] = "tg"
         else:
             button = stream_markup(_, videoid, chat_id)
-            img = await gen_thumb(videoid)
+            img = await get_thumb(videoid)
             run = await message.reply_photo(
                 photo=img,
                 caption=_["stream_1"].format(
