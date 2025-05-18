@@ -14,7 +14,7 @@ from config import seconds_to_time
 from VenomX.utils.decorators import asyncify
 
 
-class Saavn:
+class SaavnAPI:
 
     @staticmethod
     async def valid(url: str) -> bool:
