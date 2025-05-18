@@ -15,7 +15,7 @@ from config import (
     adminlist,
     lyrical,
 )
-from VenomX import YouTube, Jiosavan, app
+from VenomX import YouTube, JioSavan, app
 from VenomX.core.call import Ayush
 from VenomX.misc import SUDOERS, db
 from VenomX.utils import seconds_to_min, time_to_seconds
@@ -356,9 +356,9 @@ async def admin_callback(client, CallbackQuery, _):
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "tg"
-            elif "saavn" in videoid:
+            elif "Saavn" in videoid:
                 url = check[0]["url"]
-                details = await Jiosavan.info(url)
+                details = await JioSavan.info(url)
                 button = telegram_markup(_, chat_id)
                 run = await CallbackQuery.message.reply_photo(
                     photo=details["thumb"],
@@ -369,7 +369,7 @@ async def admin_callback(client, CallbackQuery, _):
                 db[chat_id][0]["markup"] = "tg"
             else:
                 button = stream_markup(_, videoid, chat_id)
-                img = await gen_thumb(videoid)
+                img = await get_thumb(videoid)
                 run = await CallbackQuery.message.reply_photo(
                     photo=img,
                     caption=_["stream_1"].format(
