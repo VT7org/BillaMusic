@@ -1,15 +1,10 @@
-
-# All rights reserved.
-#
-
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from pyrogram.errors import ChannelPrivate
 
-from config import PLAYLIST_IMG_URL, PRIVATE_BOT_MODE
-from config import adminlist
+from config import PLAYLIST_IMG_URL, PRIVATE_BOT_MODE, adminlist
 from strings import get_string
-from VenomX import Platform, app
+from VenomX import YouTube, app
 from VenomX.core.call import Ayush
 from VenomX.misc import SUDOERS
 from VenomX.utils.database import (
@@ -71,7 +66,7 @@ def PlayWrapper(command):
             if message.reply_to_message
             else None
         )
-        url = await Platform.youtube.url(message)
+        url = await YouTube.url(message)
         if audio_telegram is None and video_telegram is None and url is None:
             if len(message.command) < 2:
                 if "stream" in message.command:
