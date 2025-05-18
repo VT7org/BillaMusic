@@ -1,11 +1,7 @@
-
-# All rights reserved.
-#
-
 import re
 
 import spotipy
-from py_yt import VideosSearch
+from youtubesearchpython.__future__ import VideosSearch
 from spotipy.oauth2 import SpotifyClientCredentials
 
 import config
