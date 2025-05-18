@@ -1,15 +1,12 @@
-
-# All rights reserved.
-#
-
 import re
+from typing import Union
 
 import aiohttp
 from bs4 import BeautifulSoup
-from py_yt import VideosSearch
+from youtubesearchpython.__future__ import VideosSearch
 
 
-class Apple:
+class AppleAPI:
     def __init__(self):
         self.regex = r"^(https:\/\/music.apple.com\/)(.*)$"
         self.base = "https://music.apple.com/in/playlist/"
@@ -20,7 +17,7 @@ class Apple:
         else:
             return False
 
-    async def track(self, url, playid: bool | str = None):
+    async def track(self, url, playid: Union[bool, str] = None):
         if playid:
             url = self.base + url
         async with aiohttp.ClientSession() as session:
@@ -51,7 +48,7 @@ class Apple:
         }
         return track_details, vidid
 
-    async def playlist(self, url, playid: bool | str = None):
+    async def playlist(self, url, playid: Union[bool, str] = None):
         if playid:
             url = self.base + url
         playlist_id = url.split("playlist/")[1]
@@ -68,7 +65,7 @@ class Apple:
                 xx = (((item["content"]).split("album/")[1]).split("/")[0]).replace(
                     "-", " "
                 )
-            except Exception:
+            except:
                 xx = ((item["content"]).split("album/")[1]).split("/")[0]
             results.append(xx)
         return results, playlist_id
