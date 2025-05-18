@@ -6,7 +6,7 @@ from pyrogram.types import Message
 
 from config import BANNED_USERS
 from strings import command
-from VenomX import Platform, app
+from VenomX import YouTube, app
 from VenomX.core.call import Ayush
 from VenomX.misc import db
 from VenomX.utils import AdminRightsCheck, seconds_to_min
@@ -48,7 +48,7 @@ async def seek_comm(cli, message: Message, _, chat_id):
         to_seek = duration_played + duration_to_skip + 1
     mystic = await message.reply_text(_["admin_32"])
     if "vid_" in file_path:
-        n, file_path = await Platform.youtube.video(playing[0]["vidid"], True)
+        n, file_path = await YouTube.video(playing[0]["vidid"], True)
         if n == 0:
             return await message.reply_text(_["admin_30"])
     try:
