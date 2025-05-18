@@ -1,7 +1,3 @@
-
-# All rights reserved.
-#
-
 import random
 from os.path import realpath
 
@@ -68,7 +64,7 @@ colour = [
 ]
 
 
-class Carbon:
+class CarbonAPI:
     def __init__(self):
         self.language = "auto"
         self.drop_shadow = True
