@@ -1,7 +1,3 @@
-
-# All rights reserved.
-#
-
 import asyncio
 import os
 import time
@@ -19,7 +15,7 @@ from ..utils.formatters import convert_bytes, get_readable_time, seconds_to_min
 downloader = {}
 
 
-class Telegram:
+class TeleAPI:
     def __init__(self):
         self.chars_limit = 4096
         self.sleep = config.TELEGRAM_DOWNLOAD_EDIT_SLEEP
