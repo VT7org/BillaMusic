@@ -1,10 +1,7 @@
-
-# All rights reserved.
-#
 import asyncio
 import time
 
-from py_yt import VideosSearch
+from youtubesearchpython.__future__ import VideosSearch
 from pyrogram import filters
 from pyrogram.enums import ChatType, ParseMode
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
