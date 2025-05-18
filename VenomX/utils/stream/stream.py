@@ -1,7 +1,3 @@
-
-# All rights reserved.
-#
-
 import os
 from random import randint
 from typing import Union
@@ -9,7 +5,7 @@ from typing import Union
 from pyrogram.types import InlineKeyboardMarkup
 
 import config
-from VenomX import Platform, app
+from VenomX import Carbon, YouTube, app
 from VenomX.core.call import Ayush
 from VenomX.misc import db
 from VenomX.utils.database import (
@@ -22,7 +18,7 @@ from VenomX.utils.inline.play import stream_markup, telegram_markup
 from VenomX.utils.inline.playlist import close_markup
 from VenomX.utils.pastebin import Ayushbin
 from VenomX.utils.stream.queue import put_queue, put_queue_index
-from VenomX.utils.thumbnails import gen_qthumb, gen_thumb
+from VenomX.utils.thumbnails import get_qthumb, get_thumb
 
 
 async def stream(
@@ -58,7 +54,7 @@ async def stream(
                     duration_sec,
                     thumbnail,
                     vidid,
-                ) = await Platform.youtube.details(search, False if spotify else True)
+                ) = await YouTube.details(search, False if spotify else True)
             except Exception:
                 continue
             if str(duration_min) == "None":
@@ -106,7 +102,7 @@ async def stream(
                     "video" if video else "audio",
                     forceplay=forceplay,
                 )
-                img = await gen_thumb(vidid)
+                img = await get_thumb(vidid)
                 button = stream_markup(_, vidid, chat_id)
                 run = await app.send_photo(
                     original_chat_id,
@@ -130,7 +126,7 @@ async def stream(
                 car = os.linesep.join(msg.split(os.linesep)[:17])
             else:
                 car = msg
-            carbon = await Platform.carbon.generate(car, randint(100, 10000000))
+            carbon = await Carbon.generate(car, randint(100, 10000000))
             upl = close_markup(_)
             return await app.send_photo(
                 original_chat_id,
@@ -147,7 +143,7 @@ async def stream(
         thumbnail = result["thumb"]
         status = True if video else None
         try:
-            file_path, direct = await Platform.youtube.download(
+            file_path, direct = await YouTube.download(
                 vidid, mystic, videoid=True, video=status
             )
         except Exception:
@@ -165,7 +161,7 @@ async def stream(
                 "video" if video else "audio",
             )
             position = len(db.get(chat_id)) - 1
-            qimg = await gen_qthumb(vidid)
+            qimg = await get_qthumb(vidid)
             run = await app.send_photo(
                 original_chat_id,
                 photo=qimg,
@@ -192,7 +188,7 @@ async def stream(
                 "video" if video else "audio",
                 forceplay=forceplay,
             )
-            img = await gen_thumb(vidid)
+            img = await get_thumb(vidid)
             button = stream_markup(_, vidid, chat_id)
             run = await app.send_photo(
                 original_chat_id,
@@ -208,7 +204,7 @@ async def stream(
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "stream"
 
-    elif "saavn" in streamtype:
+    elif "Saavn" in streamtype:
         if streamtype == "saavn_track":
             if result["duration_sec"] == 0:
                 return
@@ -472,7 +468,7 @@ async def stream(
         else:
             if not forceplay:
                 db[chat_id] = []
-            n, file_path = await Platform.youtube.video(link)
+            n, file_path = await YouTube.video(link)
             if n == 0:
                 raise AssistantErr(_["str_3"])
             await Ayush.join_call(
@@ -494,7 +490,7 @@ async def stream(
                 "video" if video else "audio",
                 forceplay=forceplay,
             )
-            img = await gen_thumb(vidid)
+            img = await get_thumb(vidid)
             button = telegram_markup(_, chat_id)
             run = await app.send_photo(
                 original_chat_id,
