@@ -1,6 +1,3 @@
-
-# All rights reserved.
-#
 import os
 from random import randint
 
@@ -10,7 +7,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from config import BANNED_USERS, SERVER_PLAYLIST_LIMIT
 from strings import command
-from VenomX import Platform, app
+from VenomX import app
 from VenomX.utils.database import (
     delete_playlist,
     get_playlist,
