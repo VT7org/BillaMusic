@@ -36,8 +36,7 @@ from VenomX.utils.database import (
 from VenomX.utils.exceptions import AssistantErr
 from VenomX.utils.inline.play import stream_markup, telegram_markup
 from VenomX.utils.stream.autoclear import auto_clean
-from VenomX.utils.thumbnails import gen_thumb
-
+from VenomX.utils.thumbnails import get_thumb
 from pyrogram.errors import (
     ChannelsTooMuch,
     ChatAdminRequired,
