@@ -5,7 +5,7 @@ from typing import Union
 from pyrogram.types import InlineKeyboardMarkup
 
 import config
-from VenomX import Carbon, YouTube, app
+from VenomX import Carbon, YouTube, JioSavan, app
 from VenomX.core.call import Ayush
 from VenomX.misc import db
 from VenomX.utils.database import (
@@ -18,7 +18,7 @@ from VenomX.utils.inline.play import stream_markup, telegram_markup
 from VenomX.utils.inline.playlist import close_markup
 from VenomX.utils.pastebin import Ayushbin
 from VenomX.utils.stream.queue import put_queue, put_queue_index
-from VenomX.utils.thumbnails import get_qthumb, get_thumb
+from VenomX.utils.thumbnails import get_thumb
 
 
 async def stream(
@@ -161,7 +161,7 @@ async def stream(
                 "video" if video else "audio",
             )
             position = len(db.get(chat_id)) - 1
-            qimg = await get_qthumb(vidid)
+            qimg = await get_thumb(vidid)
             run = await app.send_photo(
                 original_chat_id,
                 photo=qimg,
@@ -275,7 +275,7 @@ async def stream(
                 duration_sec = search["duration_sec"]
                 link = search["url"]
                 thumb = search["thumb"]
-                file_path, n = await Platform.saavn.download(link)
+                file_path, n = await JioSavan.download(link)
                 if await is_active_chat(chat_id):
                     await put_queue(
                         chat_id,
@@ -334,7 +334,7 @@ async def stream(
                     car = os.linesep.join(msg.split(os.linesep)[:17])
                 else:
                     car = msg
-                carbon = await Platform.carbon.generate(car, randint(100, 10000000))
+                carbon = await Carbon.generate(car, randint(100, 10000000))
                 upl = close_markup(_)
                 return await app.send_photo(
                     original_chat_id,
