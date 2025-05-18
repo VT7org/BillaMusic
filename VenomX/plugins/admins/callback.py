@@ -17,7 +17,7 @@ from config import (
     adminlist,
     lyrical,
 )
-from VenomX import Platform, app
+from VenomX import YouTube, Jiosavan, app
 from VenomX.core.call import Ayush
 from VenomX.misc import SUDOERS, db
 from VenomX.utils import seconds_to_min, time_to_seconds
@@ -47,7 +47,7 @@ from VenomX.utils.inline.play import (
 )
 from VenomX.utils.stream.autoclear import auto_clean
 from VenomX.utils.stream.stream import stream
-from VenomX.utils.thumbnails import gen_thumb
+from VenomX.utils.thumbnails import get_thumb
 
 wrong = {}
 
@@ -254,7 +254,7 @@ async def admin_callback(client, CallbackQuery, _):
         status = True if str(streamtype) == "video" else None
         db[chat_id][0]["played"] = 0
         if "live_" in queued:
-            n, link = await Platform.youtube.video(videoid, True)
+            n, link = await YouTube.video(videoid, True)
             if n == 0:
                 return await CallbackQuery.message.reply_text(
                     _["admin_11"].format(title)
@@ -264,7 +264,7 @@ async def admin_callback(client, CallbackQuery, _):
             except Exception:
                 return await CallbackQuery.message.reply_text(_["call_7"])
             button = telegram_markup(_, chat_id)
-            img = await gen_thumb(videoid)
+            img = await get_thumb(videoid)
             run = await CallbackQuery.message.reply_photo(
                 photo=img,
                 caption=_["stream_1"].format(
@@ -281,7 +281,7 @@ async def admin_callback(client, CallbackQuery, _):
                 _["call_8"], disable_web_page_preview=True
             )
             try:
-                file_path, direct = await Platform.youtube.download(
+                file_path, direct = await Youtube.download(
                     videoid,
                     mystic,
                     videoid=True,
@@ -294,7 +294,7 @@ async def admin_callback(client, CallbackQuery, _):
             except Exception:
                 return await mystic.edit_text(_["call_7"])
             button = stream_markup(_, videoid, chat_id)
-            img = await gen_thumb(videoid)
+            img = await get_thumb(videoid)
             run = await CallbackQuery.message.reply_photo(
                 photo=img,
                 caption=_["stream_1"].format(
@@ -360,7 +360,7 @@ async def admin_callback(client, CallbackQuery, _):
                 db[chat_id][0]["markup"] = "tg"
             elif "saavn" in videoid:
                 url = check[0]["url"]
-                details = await Platform.saavn.info(url)
+                details = await Jiosavan.info(url)
                 button = telegram_markup(_, chat_id)
                 run = await CallbackQuery.message.reply_photo(
                     photo=details["thumb"],
