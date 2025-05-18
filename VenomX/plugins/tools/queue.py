@@ -1,8 +1,5 @@
-
-# All rights reserved.
-#
-
 import asyncio
+import os
 
 from pyrogram import filters
 from pyrogram.errors import FloodWait
@@ -11,7 +8,7 @@ from pyrogram.types import CallbackQuery, InputMediaPhoto, Message
 import config
 from config import BANNED_USERS
 from strings import command
-from VenomX import app, Platform
+from VenomX import app
 from VenomX.misc import db
 from VenomX.utils import Ayushbin, get_channeplayCB, seconds_to_min
 from VenomX.utils.database import get_cmode, is_active_chat, is_music_playing
