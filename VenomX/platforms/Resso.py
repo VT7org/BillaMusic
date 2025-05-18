@@ -1,15 +1,12 @@
-
-# All rights reserved.
-#
-
 import re
+from typing import Union
 
 import aiohttp
 from bs4 import BeautifulSoup
-from py_yt import VideosSearch
+from youtubesearchpython.__future__ import VideosSearch
 
 
-class Resso:
+class RessoAPI:
     def __init__(self):
         self.regex = r"^(https:\/\/m.resso.com\/)(.*)$"
         self.base = "https://m.resso.com/"
@@ -20,7 +17,7 @@ class Resso:
         else:
             return False
 
-    async def track(self, url, playid: bool | str = None):
+    async def track(self, url, playid: Union[bool, str] = None):
         if playid:
             url = self.base + url
         async with aiohttp.ClientSession() as session:
@@ -36,7 +33,7 @@ class Resso:
                 des = tag.get("content", None)
                 try:
                     des = des.split("·")[0]
-                except Exception:
+                except:
                     pass
         if des == "":
             return
