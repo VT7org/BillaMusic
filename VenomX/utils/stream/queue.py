@@ -1,8 +1,4 @@
-
-# All rights reserved.
-#
-
-
+import os
 from typing import Union
 
 from config import autoclean, chatstats, userstats
