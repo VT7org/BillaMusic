@@ -1,11 +1,7 @@
-
-# All rights reserved.
-#
-
 from pyrogram import filters
 
 from config import BANNED_USERS
-from VenomX import Platform, app
+from VenomX import app
 from VenomX.utils.channelplay import get_channeplayCB
 from VenomX.utils.decorators.language import languageCB
 from VenomX.utils.stream.stream import stream
