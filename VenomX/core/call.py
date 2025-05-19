@@ -15,7 +15,7 @@ from pytgcalls.types import StreamAudioEnded
 
 import config
 from strings import get_string
-from VenomX import LOGGER, YouTube, JioSavan, Soundcloud, app, userbot
+from VenomX import LOGGER, YouTube, JioSavan, Soundcloud, Telegram, Resso, Spotify, Apple, app, userbot
 from VenomX.misc import db
 from VenomX.utils.database import (
     add_active_chat,
