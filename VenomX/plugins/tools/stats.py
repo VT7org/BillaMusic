@@ -15,7 +15,7 @@ from pytgcalls.__version__ import __version__ as pytgver
 import config
 from config import BANNED_USERS
 from strings import command
-from VenomX import Platform, app
+from VenomX import YouTube, app
 from VenomX.core.userbot import assistants
 from VenomX.misc import SUDOERS, pymongodb
 from VenomX.plugins import ALL_MODULES
@@ -98,7 +98,7 @@ async def gstats_global(client, message: Message, _):
         duration_sec,
         thumbnail,
         vidid,
-    ) = await Platform.youtube.details(videoid, True)
+    ) = await YouTube.details(videoid, True)
     title = title.title()
     final = f"Top played Tracks on  {app.mention}\n\n**Title:** {title}\n\nPlayed** {co} **times"
     upl = get_stats_markup(_, True if message.from_user.id in SUDOERS else False)
