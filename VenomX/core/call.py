@@ -1,6 +1,3 @@
-
-# All rights reserved.
-#
 import asyncio
 from typing import Union
 
@@ -18,7 +15,7 @@ from pytgcalls.types import StreamAudioEnded
 
 import config
 from strings import get_string
-from VenomX import LOGGER, app, userbot
+from VenomX import LOGGER, YouTube, JioSavan, Soundcloud, app, userbot
 from VenomX.misc import db
 from VenomX.utils.database import (
     add_active_chat,
@@ -374,7 +371,7 @@ class Call:
                     )
                 else:
                     try:
-                        image = await Platform.youtube.thumbnail(videoid, True)
+                        image = await YouTube.thumbnail(videoid, True)
                     except Exception:
                         image = None
                     if image and config.PRIVATE_BOT_MODE == str(True):
@@ -397,7 +394,7 @@ class Call:
                         original_chat_id,
                         text=_["call_7"],
                     )
-                img = await gen_thumb(videoid)
+                img = await get_thumb(videoid)
                 button = telegram_markup(_, chat_id)
                 run = await app.send_photo(
                     original_chat_id,
@@ -415,7 +412,7 @@ class Call:
             elif "vid_" in queued:
                 mystic = await app.send_message(original_chat_id, _["call_8"])
                 try:
-                    file_path, direct = await Platform.youtube.download(
+                    file_path, direct = await YouTube.download(
                         videoid,
                         mystic,
                         videoid=True,
@@ -433,7 +430,7 @@ class Call:
                     )
                 else:
                     try:
-                        image = await Platform.youtube.thumbnail(videoid, True)
+                        image = await YouTube.thumbnail(videoid, True)
                     except Exception:
                         image = None
                     if image and config.PRIVATE_BOT_MODE == str(True):
@@ -456,7 +453,7 @@ class Call:
                         original_chat_id,
                         text=_["call_7"],
                     )
-                img = await gen_thumb(videoid)
+                img = await get_thumb(videoid)
                 button = stream_markup(_, videoid, chat_id)
                 await mystic.delete()
                 run = await app.send_photo(
@@ -506,16 +503,16 @@ class Call:
                 url = check[0].get("url")
                 if videoid == "telegram":
                     image = None
-                elif videoid == "soundcloud":
+                elif videoid == "Soundcloud":
                     image = None
 
-                elif "saavn" in videoid:
+                elif "Saavn" in videoid:
                     url = check[0].get("url")
-                    details = await Platform.saavn.info(url)
+                    details = await JioSavan.info(url)
                     image = details["thumb"]
                 else:
                     try:
-                        image = await Platform.youtube.thumbnail(videoid, True)
+                        image = await YouTube.thumbnail(videoid, True)
                     except Exception:
                         image = None
                 if video:
@@ -585,7 +582,7 @@ class Call:
                     db[chat_id][0]["markup"] = "tg"
 
                 else:
-                    img = await gen_thumb(videoid)
+                    img = await get_thumb(videoid)
                     button = stream_markup(_, videoid, chat_id)
                     run = await app.send_photo(
                         original_chat_id,
