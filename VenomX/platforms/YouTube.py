@@ -49,12 +49,12 @@ async def check_file_size(link):
             return None
         return json.loads(stdout.decode())
 
-    def    		def parse_size(formats):
-        total_size = 0
-        for format in formats:
-            if 'filesize' in format:
-                total_size += format['filesize']
-        return total_size
+def parse_size(formats):
+    total_size = 0
+    for format in formats:
+        if 'filesize' in format:
+            total_size += format['filesize']
+    return total_size
 
     info = await get_format_info(link)
     if info is None:
