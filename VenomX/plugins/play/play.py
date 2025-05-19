@@ -502,40 +502,46 @@ async def play_commnd(
         await play_logs(message, streamtype=streamtype)
         return
     else:
-        if plist_type:
-            ran_hash = "".join(
-                random.choices(string.ascii_uppercase + string.digits, k=10)
-            )
-            lyrical[ran_hash] = plist_id
-            buttons = playlist_markup(
+    if plist_type:
+        ran_hash = "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=10)
+        )
+        lyrical[ran_hash] = plist_id
+        buttons = playlist_markup(
+            _,
+            ran_hash,
+            message.from_user.id,
+            plist_type,
+            "c" if channel else "g",
+            "f" if fplay else "d",
+        )
+        await mystic.delete()
+        await message.reply_photo(
+            photo=img,
+            caption=cap,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+        await play_logs(message, streamtype=f"Playlist : {plist_type}")
+        return
+    else:
+        if slider:
+            buttons = slider_markup(
                 _,
-                ran_hash,
+                track_id,
                 message.from_user.id,
-                plist_type,
+                query,
+                0,
                 "c" if channel else "g",
                 "f" if fplay else "d",
             )
-            await mystic.delete()
-            await message.reply_photo(
-                photo=img,
-                caption=cap,
-                reply_markup=InlineKeyboardMarkup(buttons),
-            )
-            await play_logs(message, streamtype=f"Playlist : {plist_type}")
-            return
-        else:
-            if slider:
-                buttons = slider_markup(
-                    _,
-                    track_id,
-                    message.from_user.id,
-                    query,
-                    0,
-                    "c" if channel else "g",
-                    "f" if fplay else "d",
+            try:
+                await mystic.delete()
+                await message.reply_photo(
+                    photo=details["thumb"],
+                    caption=_["play_11"].format(details["title"], details["duration_min"]),
+                    reply_markup=InlineKeyboardMarkup(buttons),
                 )
-                try:
-                    await mystic.delete()
-                    await message.reply_photo(
-                        photo=details["thumb"],
-                   
+            except Exception as e:
+                logger.error(f"Error sending slider reply: {str(e)}", exc_info=True)
+                await mystic.edit_text(_["general_3"].format(type(e).__name__))
+                return
