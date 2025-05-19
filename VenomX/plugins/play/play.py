@@ -523,8 +523,8 @@ else:
             )
             await play_logs(message, streamtype=f"Playlist : {plist_type}")
             return
-  else:
-         if slider:
+        else:
+            if slider:
                 buttons = slider_markup(
                     _,
                     track_id,
