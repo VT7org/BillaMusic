@@ -17,7 +17,6 @@ from config import (
 )
 from strings import command
 from VenomX import app
-from VenomX YouTube import cookies
 from VenomX.utils.decorators.language import language, languageCB
 from VenomX.utils.formatters import convert_bytes
 from VenomX.utils.inline.song import song_markup
@@ -25,6 +24,10 @@ import httpx  # Importing httpx for API request
 
 # API Endpoint for new audio download
 API_ENDPOINT = "https://spotify.ashlynn.workers.dev/arytmp3?url="
+
+# Dynamically load cookies path
+def cookies():
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "Cookies", "cookies.txt")
 
 @app.on_message(command("SONG_COMMAND") & filters.group & ~BANNED_USERS)
 @language
@@ -148,7 +151,6 @@ async def song_helper_cb(client, CallbackQuery, _):
             print(e)
             return await CallbackQuery.edit_message_text(_["song_7"])
         keyboard = InlineKeyboard()
-        # AVC Formats Only
         done = [160, 133, 134, 135, 136, 137, 298, 299, 264, 304, 266]
         for x in formats_available:
             check = x["format"]
@@ -174,7 +176,6 @@ async def song_helper_cb(client, CallbackQuery, _):
         )
         return await CallbackQuery.edit_message_reply_markup(reply_markup=keyboard)
 
-# Downloading Songs Here
 @app.on_callback_query(filters.regex(pattern=r"song_download") & ~BANNED_USERS)
 @languageCB
 async def song_download_cb(client, CallbackQuery, _):
@@ -187,8 +188,7 @@ async def song_download_cb(client, CallbackQuery, _):
     stype, format_id, vidid = callback_request.split("|")
     mystic = await CallbackQuery.edit_message_text(_["song_8"])
     yturl = f"https://www.youtube.com/watch?v={vidid}"
-    
-    # Check if we are downloading audio via API or yt-dlp
+
     if stype == "audio":
         api_url = API_ENDPOINT + yturl
         async with httpx.AsyncClient() as client:
@@ -197,9 +197,9 @@ async def song_download_cb(client, CallbackQuery, _):
                 data = response.json()
                 download_url = data.get("download_url", None)
                 if download_url:
-                    filename = download_url  # API provides a direct link
+                    filename = download_url
                     title = data.get("title", "Unknown Title")
-                    thumb_image_path = await CallbackQuery.message.download()  # Handle thumbnail
+                    thumb_image_path = await CallbackQuery.message.download()
                     med = InputMediaAudio(
                         media=filename,
                         caption=title,
@@ -223,14 +223,13 @@ async def song_download_cb(client, CallbackQuery, _):
             else:
                 return await mystic.edit_text(_["song_9"].format("Failed to get data from API"))
     else:
-        with yt_dlp.YoutubeDL({"quiet": True, "cookiefile": f"{cookies()}"}) as ytdl:
+        with yt_dlp.YoutubeDL({"quiet": True, "cookiefile": cookies()}) as ytdl:
             x = ytdl.extract_info(yturl, download=False)
         title = (x["title"]).title()
         title = re.sub(r"\W+", " ", title)
         thumb_image_path = await CallbackQuery.message.download()
         duration = x["duration"]
         if stype == "video":
-            thumb_image_path = await CallbackQuery.message.download()
             width = CallbackQuery.message.photo.width
             height = CallbackQuery.message.photo.height
             try:
