@@ -504,4 +504,4 @@ class YouTubeAPI:
                 downloaded_file = await loop.run_in_executor(None, audio_dl)
             return downloaded_file, direct
         except Exception as e:
-            logger.error(f"Error in download for link {link}: {str(e)
+            logger.error(f"Error in download for link {link}: {str(e)}")
