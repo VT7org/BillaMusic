@@ -1,3 +1,5 @@
+# VenomX/utils/stream/stream.py
+
 import os
 from random import randint
 from typing import Union
@@ -5,7 +7,7 @@ from typing import Union
 from pyrogram.types import InlineKeyboardMarkup
 
 import config
-from VenomX import Carbon, YouTube, JioSavan, app
+from VenomX import Carbon, YouTube, JioSavan, app, LOGGER
 from VenomX.core.call import Ayush
 from VenomX.misc import db
 from VenomX.utils.database import (
@@ -17,9 +19,7 @@ from VenomX.utils.exceptions import AssistantErr
 from VenomX.utils.inline.play import stream_markup, telegram_markup
 from VenomX.utils.inline.playlist import close_markup
 from VenomX.utils.pastebin import Ayushbin
-from VenomX.utils.stream.queue import put_queue, put_queue_index
 from VenomX.utils.thumbnails import get_thumb
-
 
 async def stream(
     _,
@@ -35,17 +35,21 @@ async def stream(
     forceplay: Union[bool, str] = None,
 ):
     if not result:
+        LOGGER(__name__).error(f"No result provided for stream in chat {chat_id}")
         return
     if video:
         if not await is_video_allowed(chat_id):
+            LOGGER(__name__).warning(f"Video not allowed in chat {chat_id}")
             raise AssistantErr(_["play_7"])
     if forceplay:
         await Ayush.force_stop_stream(chat_id)
+        LOGGER(__name__).info(f"Force stopped stream in chat {chat_id}")
+
     if streamtype == "playlist":
         msg = f"{_['playlist_16']}\n\n"
         count = 0
         for search in result:
-            if int(count) == config.PLAYLIST_FETCH_LIMIT:
+            if count >= config.PLAYLIST_FETCH_LIMIT:
                 continue
             try:
                 (
@@ -55,9 +59,10 @@ async def stream(
                     thumbnail,
                     vidid,
                 ) = await YouTube.details(search, False if spotify else True)
-            except Exception:
+            except Exception as e:
+                LOGGER(__name__).error(f"Error fetching YouTube details for {search}: {str(e)}", exc_info=True)
                 continue
-            if str(duration_min) == "None":
+            if duration_min == "None":
                 continue
             if duration_sec > config.DURATION_LIMIT:
                 continue
@@ -82,14 +87,26 @@ async def stream(
                     db[chat_id] = []
                 status = True if video else None
                 try:
-                    file_path, direct = await Platform.youtube.download(
+                    file_path, direct = await YouTube.download(
                         vidid, mystic, video=status, videoid=True
                     )
-                except Exception:
+                    LOGGER(__name__).info(f"Downloaded YouTube video {vidid} for chat {chat_id}")
+                except Exception as e:
+                    LOGGER(__name__).error(f"Error downloading YouTube video {vidid}: {str(e)}", exc_info=True)
                     raise AssistantErr(_["play_16"])
-                await Ayush.join_call(
-                    chat_id, original_chat_id, file_path, video=status, image=thumbnail
-                )
+                try:
+                    await Ayush.join_call(
+                        chat_id, original_chat_id, file_path, video=status
+                    )
+                    LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for YouTube playlist")
+                except AssistantErr as e:
+                    LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                    await mystic.edit_text(str(e))
+                    return
+                except Exception as e:
+                    LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                    await mystic.edit_text(_["play_16"])
+                    return
                 await put_queue(
                     chat_id,
                     original_chat_id,
@@ -118,6 +135,7 @@ async def stream(
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
         if count == 0:
+            LOGGER(__name__).info(f"No valid tracks in playlist for chat {chat_id}")
             return
         else:
             link = await Ayushbin(msg)
@@ -128,12 +146,14 @@ async def stream(
                 car = msg
             carbon = await Carbon.generate(car, randint(100, 10000000))
             upl = close_markup(_)
-            return await app.send_photo(
+            await app.send_photo(
                 original_chat_id,
                 photo=carbon,
                 caption=_["playlist_18"].format(link, position),
                 reply_markup=upl,
             )
+            LOGGER(__name__).info(f"Sent playlist summary for chat {chat_id}")
+            return
 
     elif streamtype == "youtube":
         link = result["link"]
@@ -146,7 +166,9 @@ async def stream(
             file_path, direct = await YouTube.download(
                 vidid, mystic, videoid=True, video=status
             )
-        except Exception:
+            LOGGER(__name__).info(f"Downloaded YouTube video {vidid} for chat {chat_id}")
+        except Exception as e:
+            LOGGER(__name__).error(f"Error downloading YouTube video {vidid}: {str(e)}", exc_info=True)
             raise AssistantErr(_["play_16"])
         if await is_active_chat(chat_id):
             await put_queue(
@@ -170,12 +192,23 @@ async def stream(
                 ),
                 reply_markup=close_markup(_),
             )
+            LOGGER(__name__).info(f"Queued YouTube video {vidid} at position {position} in chat {chat_id}")
         else:
             if not forceplay:
                 db[chat_id] = []
-            await Ayush.join_call(
-                chat_id, original_chat_id, file_path, video=status, image=thumbnail
-            )
+            try:
+                await Ayush.join_call(
+                    chat_id, original_chat_id, file_path, video=status
+                )
+                LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for YouTube video")
+            except AssistantErr as e:
+                LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(str(e))
+                return
+            except Exception as e:
+                LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(_["play_16"])
+                return
             await put_queue(
                 chat_id,
                 original_chat_id,
@@ -203,10 +236,12 @@ async def stream(
             )
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "stream"
+            LOGGER(__name__).info(f"Started YouTube stream {vidid} in chat {chat_id}")
 
     elif "Saavn" in streamtype:
         if streamtype == "saavn_track":
             if result["duration_sec"] == 0:
+                LOGGER(__name__).warning(f"Invalid duration for Saavn track in chat {chat_id}")
                 return
             file_path = result["filepath"]
             title = result["title"]
@@ -235,10 +270,21 @@ async def stream(
                     ),
                     reply_markup=close_markup(_),
                 )
+                LOGGER(__name__).info(f"Queued Saavn track at position {position} in chat {chat_id}")
             else:
                 if not forceplay:
                     db[chat_id] = []
-                await Ayush.join_call(chat_id, original_chat_id, file_path, video=None)
+                try:
+                    await Ayush.join_call(chat_id, original_chat_id, file_path, video=None)
+                    LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for Saavn track")
+                except AssistantErr as e:
+                    LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                    await mystic.edit_text(str(e))
+                    return
+                except Exception as e:
+                    LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                    await mystic.edit_text(_["play_16"])
+                    return
                 await put_queue(
                     chat_id,
                     original_chat_id,
@@ -263,6 +309,7 @@ async def stream(
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "tg"
+                LOGGER(__name__).info(f"Started Saavn track stream in chat {chat_id}")
 
         elif streamtype == "saavn_playlist":
             msg = f"{_['playlist_16']}\n\n"
@@ -293,14 +340,22 @@ async def stream(
                     count += 1
                     msg += f"{count}- {title[:70]}\n"
                     msg += f"{_['playlist_17']} {position}\n\n"
-
                 else:
-
                     if not forceplay:
                         db[chat_id] = []
-                    await Ayush.join_call(
-                        chat_id, original_chat_id, file_path, video=None
-                    )
+                    try:
+                        await Ayush.join_call(
+                            chat_id, original_chat_id, file_path, video=None
+                        )
+                        LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for Saavn playlist")
+                    except AssistantErr as e:
+                        LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                        await mystic.edit_text(str(e))
+                        return
+                    except Exception as e:
+                        LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                        await mystic.edit_text(_["play_16"])
+                        return
                     await put_queue(
                         chat_id,
                         original_chat_id,
@@ -326,6 +381,7 @@ async def stream(
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "tg"
             if count == 0:
+                LOGGER(__name__).info(f"No valid tracks in Saavn playlist for chat {chat_id}")
                 return
             else:
                 link = await Ayushbin(msg)
@@ -336,12 +392,14 @@ async def stream(
                     car = msg
                 carbon = await Carbon.generate(car, randint(100, 10000000))
                 upl = close_markup(_)
-                return await app.send_photo(
+                await app.send_photo(
                     original_chat_id,
                     photo=carbon,
                     caption=_["playlist_18"].format(link, position),
                     reply_markup=upl,
                 )
+                LOGGER(__name__).info(f"Sent Saavn playlist summary for chat {chat_id}")
+                return
 
     elif streamtype == "soundcloud":
         file_path = result["filepath"]
@@ -364,10 +422,21 @@ async def stream(
                 original_chat_id,
                 _["queue_4"].format(position, title[:30], duration_min, user_name),
             )
+            LOGGER(__name__).info(f"Queued Soundcloud track at position {position} in chat {chat_id}")
         else:
             if not forceplay:
                 db[chat_id] = []
-            await Ayush.join_call(chat_id, original_chat_id, file_path, video=None)
+            try:
+                await Ayush.join_call(chat_id, original_chat_id, file_path, video=None)
+                LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for Soundcloud track")
+            except AssistantErr as e:
+                LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(str(e))
+                return
+            except Exception as e:
+                LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(_["play_16"])
+                return
             await put_queue(
                 chat_id,
                 original_chat_id,
@@ -391,6 +460,8 @@ async def stream(
             )
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "tg"
+            LOGGER(__name__).info(f"Started Soundcloud stream in chat {chat_id}")
+
     elif streamtype == "telegram":
         file_path = result["path"]
         link = result["link"]
@@ -414,10 +485,21 @@ async def stream(
                 original_chat_id,
                 _["queue_4"].format(position, title[:30], duration_min, user_name),
             )
+            LOGGER(__name__).info(f"Queued Telegram media at position {position} in chat {chat_id}")
         else:
             if not forceplay:
                 db[chat_id] = []
-            await Ayush.join_call(chat_id, original_chat_id, file_path, video=status)
+            try:
+                await Ayush.join_call(chat_id, original_chat_id, file_path, video=status)
+                LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for Telegram media")
+            except AssistantErr as e:
+                LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(str(e))
+                return
+            except Exception as e:
+                LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(_["play_16"])
+                return
             await put_queue(
                 chat_id,
                 original_chat_id,
@@ -441,6 +523,8 @@ async def stream(
             )
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "tg"
+            LOGGER(__name__).info(f"Started Telegram stream in chat {chat_id}")
+
     elif streamtype == "live":
         link = result["link"]
         vidid = result["vidid"]
@@ -465,19 +549,27 @@ async def stream(
                 original_chat_id,
                 _["queue_4"].format(position, title[:30], duration_min, user_name),
             )
+            LOGGER(__name__).info(f"Queued live stream at position {position} in chat {chat_id}")
         else:
             if not forceplay:
                 db[chat_id] = []
             n, file_path = await YouTube.video(link)
             if n == 0:
+                LOGGER(__name__).error(f"Failed to get live stream URL for {vidid}")
                 raise AssistantErr(_["str_3"])
-            await Ayush.join_call(
-                chat_id,
-                original_chat_id,
-                file_path,
-                video=status,
-                image=thumbnail if thumbnail else None,
-            )
+            try:
+                await Ayush.join_call(
+                    chat_id, original_chat_id, file_path, video=status
+                )
+                LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for live stream")
+            except AssistantErr as e:
+                LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(str(e))
+                return
+            except Exception as e:
+                LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(_["play_16"])
+                return
             await put_queue(
                 chat_id,
                 original_chat_id,
@@ -505,6 +597,8 @@ async def stream(
             )
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "tg"
+            LOGGER(__name__).info(f"Started live stream {vidid} in chat {chat_id}")
+
     elif streamtype == "index":
         link = result
         title = "Index or M3u8 Link"
@@ -524,15 +618,23 @@ async def stream(
             await mystic.edit_text(
                 _["queue_4"].format(position, title[:30], duration_min, user_name)
             )
+            LOGGER(__name__).info(f"Queued index stream at position {position} in chat {chat_id}")
         else:
             if not forceplay:
                 db[chat_id] = []
-            await Ayush.join_call(
-                chat_id,
-                original_chat_id,
-                link,
-                video=True if video else None,
-            )
+            try:
+                await Ayush.join_call(
+                    chat_id, original_chat_id, link, video=True if video else None
+                )
+                LOGGER(__name__).info(f"Assistant joined call in chat {chat_id} for index stream")
+            except AssistantErr as e:
+                LOGGER(__name__).error(f"AssistantErr in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(str(e))
+                return
+            except Exception as e:
+                LOGGER(__name__).error(f"Unexpected error in join_call for chat {chat_id}: {str(e)}", exc_info=True)
+                await mystic.edit_text(_["play_16"])
+                return
             await put_queue_index(
                 chat_id,
                 original_chat_id,
@@ -554,3 +656,4 @@ async def stream(
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "tg"
             await mystic.delete()
+            LOGGER(__name__).info(f"Started index stream in chat {chat_id}")
