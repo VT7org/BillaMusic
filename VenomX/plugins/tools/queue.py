@@ -8,7 +8,7 @@ from pyrogram.types import CallbackQuery, InputMediaPhoto, Message
 import config
 from config import BANNED_USERS
 from strings import command
-from VenomX import app
+from VenomX import YouTube, Telegram, Soundcloud, JioSavan, app
 from VenomX.misc import db
 from VenomX.utils import Ayushbin, get_channeplayCB, seconds_to_min
 from VenomX.utils.database import get_cmode, is_active_chat, is_music_playing
@@ -78,8 +78,8 @@ async def ping_com(client, message: Message, _):
             )
         elif videoid == "soundcloud":
             IMAGE = config.SOUNCLOUD_IMG_URL
-        elif "saavn" in videoid:
-            details = await Platform.saavn.info(got[0]["url"])
+        elif "Saavn" in videoid:
+            details = await JioSavan.info(got[0]["url"])
             IMAGE = details["thumb"]
         else:
             IMAGE = get_image(videoid)
@@ -242,8 +242,8 @@ async def queue_back(client, CallbackQuery: CallbackQuery, _):
             )
         elif videoid == "soundcloud":
             IMAGE = config.SOUNCLOUD_IMG_URL
-        elif "saavn" in videoid:
-            details = await Platform.saavn.info(got[0]["url"])
+        elif "Saavn" in videoid:
+            details = await JioSavan.info(got[0]["url"])
             IMAGE = details["thumb"]
         else:
             IMAGE = get_image(videoid)
