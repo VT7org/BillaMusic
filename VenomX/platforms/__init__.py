@@ -5,4 +5,4 @@ from .Soundcloud import SoundAPI
 from .Spotify import SpotifyAPI
 from .Resso import RessoAPI
 from .Telegram import TeleAPI
-from .Youtube import YouTubeAPI
+from .YouTube import YouTubeAPI
