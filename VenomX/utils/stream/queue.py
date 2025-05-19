@@ -45,7 +45,7 @@ async def put_queue(
     else:
         db[chat_id].append(put)
     autoclean.append(file)
-    vidid = "telegram" if vidid == "soundcloud" or "saavn" in vidid else vidid
+    vidid = "Telegram" if vidid == "Soundcloud" or "Saavn" in vidid else vidid
 
     to_append = {"vidid": vidid, "title": title}
     if chat_id not in chatstats:
