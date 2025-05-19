@@ -6,6 +6,7 @@ from pyrogram.types import Message
 
 from strings import get_string, command
 from VenomX import app
+from pyrogram import filters
 from VenomX.misc import SUDOERS
 from VenomX.utils.database import (
     get_lang,
