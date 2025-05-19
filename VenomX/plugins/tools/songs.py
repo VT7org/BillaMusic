@@ -17,7 +17,7 @@ from config import (
 )
 from strings import command
 from VenomX import app
-from VenomX.platforms.YouTube import cookies
+from VenomX YouTube import cookies
 from VenomX.utils.decorators.language import language, languageCB
 from VenomX.utils.formatters import convert_bytes
 from VenomX.utils.inline.song import song_markup
@@ -45,12 +45,12 @@ async def song_commad_group(client, message: Message, _):
 @language
 async def song_commad_private(client, message: Message, _):
     await message.delete()
-    url = await Platform.youtube.url(message)
+    url = await YouTube.url(message)
     if url:
-        if not await Platform.youtube.exists(url):
+        if not await YouTube.exists(url):
             return await message.reply_text(_["song_5"])
         mystic = await message.reply_text(_["play_1"])
-        (title, duration_min, duration_sec, thumbnail, vidid,) = await Platform.youtube.details(url)
+        (title, duration_min, duration_sec, thumbnail, vidid,) = await YouTube.details(url)
         if str(duration_min) == "None":
             return await mystic.edit_text(_["song_3"])
         if int(duration_sec) > SONG_DOWNLOAD_DURATION_LIMIT:
@@ -110,7 +110,7 @@ async def song_helper_cb(client, CallbackQuery, _):
         pass
     if stype == "audio":
         try:
-            formats_available, link = await Platform.youtube.formats(vidid, True)
+            formats_available, link = await YouTube.formats(vidid, True)
         except Exception:
             return await CallbackQuery.edit_message_text(_["song_7"])
         keyboard = InlineKeyboard()
@@ -143,7 +143,7 @@ async def song_helper_cb(client, CallbackQuery, _):
         return await CallbackQuery.edit_message_reply_markup(reply_markup=keyboard)
     else:
         try:
-            formats_available, link = await Platform.youtube.formats(vidid, True)
+            formats_available, link = await YouTube.formats(vidid, True)
         except Exception as e:
             print(e)
             return await CallbackQuery.edit_message_text(_["song_7"])
@@ -234,7 +234,7 @@ async def song_download_cb(client, CallbackQuery, _):
             width = CallbackQuery.message.photo.width
             height = CallbackQuery.message.photo.height
             try:
-                file_path = await Platform.youtube.download(
+                file_path = await YouTube.download(
                     yturl,
                     mystic,
                     songvideo=True,
@@ -265,7 +265,7 @@ async def song_download_cb(client, CallbackQuery, _):
             os.remove(file_path)
         elif stype == "audio":
             try:
-                filename = await Platform.youtube.download(
+                filename = await YouTube.download(
                     yturl,
                     mystic,
                     songaudio=True,
