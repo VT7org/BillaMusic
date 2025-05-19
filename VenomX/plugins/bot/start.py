@@ -10,7 +10,7 @@ import config
 from config import BANNED_USERS, START_IMG_URL
 from config.config import OWNER_ID
 from strings import command, get_string
-from VenomX import Platform, app
+from VenomX import YouTube, app
 from VenomX.misc import SUDOERS, _boot_
 from VenomX.plugins.bot.help import paginate_modules
 from VenomX.plugins.play.playlist import del_plist_msg
@@ -116,7 +116,7 @@ async def start_comm(client, message: Message, _):
             except Exception as e:
                 print(e)
                 return
-            thumbnail = await Platform.youtube.thumbnail(videoid, True)
+            thumbnail = await YouTube.thumbnail(videoid, True)
             await m.delete()
             await message.reply_photo(photo=thumbnail, caption=msg)
             return
@@ -137,7 +137,7 @@ async def start_comm(client, message: Message, _):
             lyrical = config.lyrical
             lyrics = lyrical.get(query)
             if lyrics:
-                await Platform.telegram.send_split_text(message, lyrics)
+                await Telegram.send_split_text(message, lyrics)
                 return
             else:
                 await message.reply_text("Failed to get lyrics ")
@@ -160,16 +160,16 @@ async def start_comm(client, message: Message, _):
                 link = result["link"]
                 published = result["publishedTime"]
             searched_text = f"""
-🔍__**Video track information **__
+🔍__**Video Song information **__
 
 ❇️**Title:** {title}
 
 ⏳**Duration:** {duration} Mins
 👀**Views:** `{views}`
-⏰**Published times:** {published}
+⏰**Published time:** {published}
 🎥**Channel Name:** {channel}
 📎**Channel Link:** [Visit from here]({channellink})
-🔗**Videp linl:** [Link]({link})
+🔗**Video link:** [Link]({link})
 """
             key = InlineKeyboardMarkup(
                 [
