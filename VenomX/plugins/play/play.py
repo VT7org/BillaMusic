@@ -476,9 +476,7 @@ async def play_commnd(
             return
         try:
             await stream(
-                _
-
-,
+                _,
                 mystic,
                 user_id,
                 details,
@@ -501,7 +499,7 @@ async def play_commnd(
         await mystic.delete()
         await play_logs(message, streamtype=streamtype)
         return
-else:
+    else:
         if plist_type:
             ran_hash = "".join(
                 random.choices(string.ascii_uppercase + string.digits, k=10)
@@ -523,25 +521,24 @@ else:
             )
             await play_logs(message, streamtype=f"Playlist : {plist_type}")
             return
-        else:
-            if slider:
-                buttons = slider_markup(
-                    _,
-                    track_id,
-                    message.from_user.id,
-                    query,
-                    0,
-                    "c" if channel else "g",
-                    "f" if fplay else "d",
+        elif slider:
+            buttons = slider_markup(
+                _,
+                track_id,
+                message.from_user.id,
+                query,
+                0,
+                "c" if channel else "g",
+                "f" if fplay else "d",
+            )
+            try:
+                await mystic.delete()
+                await message.reply_photo(
+                    photo=details["thumb"],
+                    caption=_["play_11"].format(details["title"], details["duration_min"]),
+                    reply_markup=InlineKeyboardMarkup(buttons),
                 )
-                try:
-                    await mystic.delete()
-                    await message.reply_photo(
-                        photo=details["thumb"],
-                        caption=_["play_11"].format(details["title"], details["duration_min"]),
-                        reply_markup=InlineKeyboardMarkup(buttons),
-                    )
-                except Exception as e:
-                    logger.error(f"Error sending slider reply: {str(e)}", exc_info=True)
-                    await mystic.edit_text(_["general_3"].format(type(e).__name__))
-                    return
+            except Exception as e:
+                logger.error(f"Error sending slider reply: {str(e)}", exc_info=True)
+                await mystic.edit_text(_["general_3"].format(type(e).__name__))
+                return
